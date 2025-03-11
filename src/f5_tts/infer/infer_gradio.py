@@ -1,5 +1,5 @@
 # ruff: noqa: E402
-# Above allows ruff to ignore E402: module level import not at top of file
+# 上面允许ruff忽略E402: 模块级导入不在文件顶部
 
 import json
 import re
@@ -51,7 +51,7 @@ DEFAULT_TTS_MODEL_CFG = [
 ]
 
 
-# load models
+# 加载模型
 
 vocoder = load_vocoder()
 
@@ -87,7 +87,7 @@ chat_tokenizer_state = None
 
 @gpu_decorator
 def generate_response(messages, model, tokenizer):
-    """Generate response using Qwen"""
+    """使用Qwen生成回复"""
     text = tokenizer.apply_chat_template(
         messages,
         tokenize=False,
@@ -121,11 +121,11 @@ def infer(
     show_info=gr.Info,
 ):
     if not ref_audio_orig:
-        gr.Warning("Please provide reference audio.")
+        gr.Warning("请提供参考音频。")
         return gr.update(), gr.update(), ref_text
 
     if not gen_text.strip():
-        gr.Warning("Please enter text to generate.")
+        gr.Warning("请输入要生成的文本。")
         return gr.update(), gr.update(), ref_text
 
     ref_audio, ref_text = preprocess_ref_audio_text(ref_audio_orig, ref_text, show_info=show_info)
@@ -135,14 +135,14 @@ def infer(
     elif model == "E2-TTS":
         global E2TTS_ema_model
         if E2TTS_ema_model is None:
-            show_info("Loading E2-TTS model...")
+            show_info("正在加载E2-TTS模型...")
             E2TTS_ema_model = load_e2tts()
         ema_model = E2TTS_ema_model
     elif isinstance(model, list) and model[0] == "Custom":
-        assert not USING_SPACES, "Only official checkpoints allowed in Spaces."
+        assert not USING_SPACES, "在Spaces中只允许使用官方检查点。"
         global custom_ema_model, pre_custom_path
         if pre_custom_path != model[1]:
-            show_info("Loading Custom TTS model...")
+            show_info("正在加载自定义TTS模型...")
             custom_ema_model = load_custom(model[1], vocab_path=model[2], model_cfg=model[3])
             pre_custom_path = model[1]
         ema_model = custom_ema_model
@@ -160,7 +160,7 @@ def infer(
         progress=gr.Progress(),
     )
 
-    # Remove silence
+    # 移除静音
     if remove_silence:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
             sf.write(f.name, final_wave, final_sample_rate)
@@ -168,7 +168,7 @@ def infer(
             final_wave, _ = torchaudio.load(f.name)
         final_wave = final_wave.squeeze().cpu().numpy()
 
-    # Save the spectrogram
+    # 保存频谱图
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_spectrogram:
         spectrogram_path = tmp_spectrogram.name
         save_spectrogram(combined_spectrogram, spectrogram_path)
@@ -266,24 +266,24 @@ with gr.Blocks() as app_tts:
 
 
 def parse_speechtypes_text(gen_text):
-    # Pattern to find {speechtype}
+    # 查找{speechtype}的模式
     pattern = r"\{(.*?)\}"
 
-    # Split the text by the pattern
+    # 按模式分割文本
     tokens = re.split(pattern, gen_text)
 
     segments = []
 
-    current_style = "Regular"
+    current_style = "常规"
 
     for i in range(len(tokens)):
         if i % 2 == 0:
-            # This is text
+            # 这是文本
             text = tokens[i].strip()
             if text:
                 segments.append({"style": current_style, "text": text})
         else:
-            # This is style
+            # 这是风格
             style = tokens[i].strip()
             current_style = style
 
@@ -291,7 +291,7 @@ def parse_speechtypes_text(gen_text):
 
 
 with gr.Blocks() as app_multistyle:
-    # New section for multistyle generation
+    # 多风格生成部分
     gr.Markdown(
         """
     # 多种语音风格生成
@@ -327,7 +327,7 @@ with gr.Blocks() as app_multistyle:
         "为每种语音风格上传不同的音频片段。第一种语音风格是必需的。您可以通过点击'添加语音风格'按钮添加额外的语音风格。"
     )
 
-    # Regular speech type (mandatory)
+    # 常规语音风格（必需）
     with gr.Row() as regular_row:
         with gr.Column():
             regular_name = gr.Textbox(value="常规", label="语音风格名称")
@@ -335,7 +335,7 @@ with gr.Blocks() as app_multistyle:
         regular_audio = gr.Audio(label="常规参考音频", type="filepath")
         regular_ref_text = gr.Textbox(label="参考文本（常规）", lines=2)
 
-    # Regular speech type (max 100)
+    # 常规语音风格（最多100个）
     max_speech_types = 100
     speech_type_rows = [regular_row]
     speech_type_names = [regular_name]
@@ -344,7 +344,7 @@ with gr.Blocks() as app_multistyle:
     speech_type_delete_btns = [None]
     speech_type_insert_btns = [regular_insert]
 
-    # Additional speech types (99 more)
+    # 额外的语音风格（还有99个）
     for i in range(max_speech_types - 1):
         with gr.Row(visible=False) as row:
             with gr.Column():
@@ -360,13 +360,13 @@ with gr.Blocks() as app_multistyle:
         speech_type_delete_btns.append(delete_btn)
         speech_type_insert_btns.append(insert_btn)
 
-    # Button to add speech type
+    # 添加语音风格的按钮
     add_speech_type_btn = gr.Button("添加语音风格")
 
-    # Keep track of autoincrement of speech types, no roll back
+    # 跟踪语音风格的自动递增，不回滚
     speech_type_count = 1
 
-    # Function to add a speech type
+    # 添加语音风格的函数
     def add_speech_type_fn():
         row_updates = [gr.update() for _ in range(max_speech_types)]
         global speech_type_count
@@ -374,23 +374,23 @@ with gr.Blocks() as app_multistyle:
             row_updates[speech_type_count] = gr.update(visible=True)
             speech_type_count += 1
         else:
-            gr.Warning("Exhausted maximum number of speech types. Consider restart the app.")
+            gr.Warning("已达到最大语音风格数量。请考虑重启应用。")
         return row_updates
 
     add_speech_type_btn.click(add_speech_type_fn, outputs=speech_type_rows)
 
-    # Function to delete a speech type
+    # 删除语音风格的函数
     def delete_speech_type_fn():
         return gr.update(visible=False), None, None, None
 
-    # Update delete button clicks
+    # 更新删除按钮点击
     for i in range(1, len(speech_type_delete_btns)):
         speech_type_delete_btns[i].click(
             delete_speech_type_fn,
             outputs=[speech_type_rows[i], speech_type_names[i], speech_type_audios[i], speech_type_ref_texts[i]],
         )
 
-    # Text input for the prompt
+    # 文本输入提示
     gen_text_input_multistyle = gr.Textbox(
         label="待生成文本",
         lines=10,
@@ -400,7 +400,7 @@ with gr.Blocks() as app_multistyle:
     def make_insert_speech_type_fn(index):
         def insert_speech_type_fn(current_text, speech_type_name):
             current_text = current_text or ""
-            speech_type_name = speech_type_name or "None"
+            speech_type_name = speech_type_name or "无"
             updated_text = current_text + f"{{{speech_type_name}}} "
             return updated_text
 
@@ -420,10 +420,10 @@ with gr.Blocks() as app_multistyle:
             value=True,
         )
 
-    # Generate button
+    # 生成按钮
     generate_multistyle_btn = gr.Button("生成多风格语音", variant="primary")
 
-    # Output audio
+    # 输出音频
     audio_output_multistyle = gr.Audio(label="合成的音频")
 
     @gpu_decorator
@@ -435,7 +435,7 @@ with gr.Blocks() as app_multistyle:
         speech_type_audios_list = args[max_speech_types : 2 * max_speech_types]
         speech_type_ref_texts_list = args[2 * max_speech_types : 3 * max_speech_types]
         remove_silence = args[3 * max_speech_types]
-        # Collect the speech types and their audios into a dict
+        # 收集语音风格及其音频到字典中
         speech_types = OrderedDict()
 
         ref_text_idx = 0
@@ -448,12 +448,12 @@ with gr.Blocks() as app_multistyle:
                 speech_types[f"@{ref_text_idx}@"] = {"audio": "", "ref_text": ""}
             ref_text_idx += 1
 
-        # Parse the gen_text into segments
+        # 将gen_text解析为段落
         segments = parse_speechtypes_text(gen_text)
 
-        # For each segment, generate speech
+        # 为每个段落生成语音
         generated_audio_segments = []
-        current_style = "Regular"
+        current_style = "常规"
 
         for segment in segments:
             style = segment["style"]
@@ -462,31 +462,31 @@ with gr.Blocks() as app_multistyle:
             if style in speech_types:
                 current_style = style
             else:
-                gr.Warning(f"Type {style} is not available, will use Regular as default.")
-                current_style = "Regular"
+                gr.Warning(f"风格 {style} 不可用，将使用常规风格作为默认值。")
+                current_style = "常规"
 
             try:
                 ref_audio = speech_types[current_style]["audio"]
             except KeyError:
-                gr.Warning(f"Please provide reference audio for type {current_style}.")
+                gr.Warning(f"请为风格 {current_style} 提供参考音频。")
                 return [None] + [speech_types[style]["ref_text"] for style in speech_types]
             ref_text = speech_types[current_style].get("ref_text", "")
 
-            # Generate speech for this segment
+            # 为这个段落生成语音
             audio_out, _, ref_text_out = infer(
                 ref_audio, ref_text, text, tts_model_choice, remove_silence, 0, show_info=print
-            )  # show_info=print no pull to top when generating
+            )  # show_info=print 生成时不弹出顶部提示
             sr, audio_data = audio_out
 
             generated_audio_segments.append(audio_data)
             speech_types[current_style]["ref_text"] = ref_text_out
 
-        # Concatenate all audio segments
+        # 连接所有音频段落
         if generated_audio_segments:
             final_audio_data = np.concatenate(generated_audio_segments)
             return [(sr, final_audio_data)] + [speech_types[style]["ref_text"] for style in speech_types]
         else:
-            gr.Warning("No audio generated.")
+            gr.Warning("未生成任何音频。")
             return [None] + [speech_types[style]["ref_text"] for style in speech_types]
 
     generate_multistyle_btn.click(
@@ -503,11 +503,11 @@ with gr.Blocks() as app_multistyle:
         outputs=[audio_output_multistyle] + speech_type_ref_texts,
     )
 
-    # Validation function to disable Generate button if speech types are missing
+    # 验证函数，如果缺少语音风格则禁用生成按钮
     def validate_speech_types(gen_text, regular_name, *args):
         speech_type_names_list = args
 
-        # Collect the speech types names
+        # 收集可用的语音风格名称
         speech_types_available = set()
         if regular_name:
             speech_types_available.add(regular_name)
@@ -515,18 +515,18 @@ with gr.Blocks() as app_multistyle:
             if name_input:
                 speech_types_available.add(name_input)
 
-        # Parse the gen_text to get the speech types used
+        # 解析gen_text获取使用的语音风格
         segments = parse_speechtypes_text(gen_text)
         speech_types_in_text = set(segment["style"] for segment in segments)
 
-        # Check if all speech types in text are available
+        # 检查文本中的所有语音风格是否可用
         missing_speech_types = speech_types_in_text - speech_types_available
 
         if missing_speech_types:
-            # Disable the generate button
+            # 禁用生成按钮
             return gr.update(interactive=False)
         else:
-            # Enable the generate button
+            # 启用生成按钮
             return gr.update(interactive=True)
 
     gen_text_input_multistyle.change(
@@ -558,13 +558,13 @@ with gr.Blocks() as app_chat:
             global chat_model_state, chat_tokenizer_state
             if chat_model_state is None:
                 show_info = gr.Info
-                show_info("Loading chat model...")
+                show_info("正在加载聊天模型...")
                 model_name = "Qwen/Qwen2.5-3B-Instruct"
                 chat_model_state = AutoModelForCausalLM.from_pretrained(
                     model_name, torch_dtype="auto", device_map="auto"
                 )
                 chat_tokenizer_state = AutoTokenizer.from_pretrained(model_name)
-                show_info("Chat model loaded.")
+                show_info("聊天模型已加载。")
 
             return gr.update(visible=False), gr.update(visible=True)
 
@@ -625,10 +625,10 @@ with gr.Blocks() as app_chat:
             ]
         )
 
-        # Modify process_audio_input to use model and tokenizer from state
+        # 修改process_audio_input以使用state中的模型和tokenizer
         @gpu_decorator
         def process_audio_input(audio_path, text, history, conv_state):
-            """Handle audio or text input from user"""
+            """处理用户的音频或文本输入"""
 
             if not audio_path and not text.strip():
                 return history, conv_state, ""
@@ -651,7 +651,7 @@ with gr.Blocks() as app_chat:
 
         @gpu_decorator
         def generate_audio_response(history, ref_audio, ref_text, remove_silence):
-            """Generate TTS audio for AI response"""
+            """为AI回复生成TTS音频"""
             if not history or not ref_audio:
                 return None
 
@@ -667,12 +667,12 @@ with gr.Blocks() as app_chat:
                 remove_silence,
                 cross_fade_duration=0.15,
                 speed=1.0,
-                show_info=print,  # show_info=print no pull to top when generating
+                show_info=print,  # show_info=print 生成时不弹出顶部提示
             )
             return audio_result, ref_text_out
 
         def clear_conversation():
-            """Reset the conversation"""
+            """重置对话"""
             return [], [
                 {
                     "role": "system",
@@ -681,11 +681,11 @@ with gr.Blocks() as app_chat:
             ]
 
         def update_system_prompt(new_prompt):
-            """Update the system prompt and reset the conversation"""
+            """更新系统提示词并重置对话"""
             new_conv_state = [{"role": "system", "content": new_prompt}]
             return [], new_conv_state
 
-        # Handle audio input
+        # 处理音频输入
         audio_input_chat.stop_recording(
             process_audio_input,
             inputs=[audio_input_chat, text_input_chat, chatbot_interface, conversation_state],
@@ -700,7 +700,7 @@ with gr.Blocks() as app_chat:
             audio_input_chat,
         )
 
-        # Handle text input
+        # 处理文本输入
         text_input_chat.submit(
             process_audio_input,
             inputs=[audio_input_chat, text_input_chat, chatbot_interface, conversation_state],
@@ -715,7 +715,7 @@ with gr.Blocks() as app_chat:
             text_input_chat,
         )
 
-        # Handle send button
+        # 处理发送按钮
         send_btn_chat.click(
             process_audio_input,
             inputs=[audio_input_chat, text_input_chat, chatbot_interface, conversation_state],
@@ -730,13 +730,13 @@ with gr.Blocks() as app_chat:
             text_input_chat,
         )
 
-        # Handle clear button
+        # 处理清除按钮
         clear_btn_chat.click(
             clear_conversation,
             outputs=[chatbot_interface, conversation_state],
         )
 
-        # Handle system prompt change and reset conversation
+        # 处理系统提示词变更并重置对话
         system_prompt_chat.change(
             update_system_prompt,
             inputs=system_prompt_chat,
@@ -777,7 +777,7 @@ with gr.Blocks() as app:
 
     def switch_tts_model(new_choice):
         global tts_model_choice
-        if new_choice == "Custom":  # override in case webpage is refreshed
+        if new_choice == "自定义":  # 网页刷新时覆盖
             custom_ckpt_path, custom_vocab_path, custom_model_cfg = load_last_used_custom()
             tts_model_choice = ["Custom", custom_ckpt_path, custom_vocab_path, json.loads(custom_model_cfg)]
             return (
@@ -828,7 +828,6 @@ with gr.Blocks() as app:
             label="配置：以字典形式",
             visible=False,
         )
-
     choose_tts_model.change(
         switch_tts_model,
         inputs=[choose_tts_model],
