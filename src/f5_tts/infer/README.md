@@ -1,54 +1,54 @@
-# Inference
+# 推理
 
-The pretrained model checkpoints can be reached at [🤗 Hugging Face](https://huggingface.co/SWivid/F5-TTS) and [🤖 Model Scope](https://www.modelscope.cn/models/SWivid/F5-TTS_Emilia-ZH-EN), or will be automatically downloaded when running inference scripts.
+预训练模型检查点可以在 [🤗 Hugging Face](https://huggingface.co/SWivid/F5-TTS) 和 [🤖 Model Scope](https://www.modelscope.cn/models/SWivid/F5-TTS_Emilia-ZH-EN) 上获取，或者在运行推理脚本时自动下载。
 
-**More checkpoints with whole community efforts can be found in [SHARED.md](SHARED.md), supporting more languages.**
+**更多由社区贡献的支持多种语言的检查点可以在 [SHARED.md](SHARED.md) 中找到。**
 
-Currently support **30s for a single** generation, which is the **total length** including both prompt and output audio. However, you can provide `infer_cli` and `infer_gradio` with longer text, will automatically do chunk generation. Long reference audio will be **clip short to ~15s**.
+目前支持单次生成**最长30秒**，这是包括提示音频和输出音频在内的**总长度**。不过，你可以向 `infer_cli` 和 `infer_gradio` 提供更长的文本，系统会自动进行分块生成。长参考音频将被**截短到约15秒**。
 
-To avoid possible inference failures, make sure you have seen through the following instructions.
+为避免可能的推理失败，请确保你已经阅读了以下说明：
 
-- Use reference audio <15s and leave some silence (e.g. 1s) at the end. Otherwise there is a risk of truncating in the middle of word, leading to suboptimal generation.
-- Uppercased letters will be uttered letter by letter, so use lowercased letters for normal words. 
-- Add some spaces (blank: " ") or punctuations (e.g. "," ".") to explicitly introduce some pauses.
-- Preprocess numbers to Chinese letters if you want to have them read in Chinese, otherwise in English.
-- If the generation output is blank (pure silence), check for ffmpeg installation (various tutorials online, blogs, videos, etc.).
-- Try turn off use_ema if using an early-stage finetuned checkpoint (which goes just few updates).
+- 使用时长小于15秒的参考音频，并在末尾留出一些静音（例如1秒）。否则可能会在单词中间截断，导致生成效果不佳。
+- 大写字母将被逐字朗读，因此普通单词请使用小写字母。
+- 添加一些空格（空白：" "）或标点符号（例如 "," "."）来明确引入停顿。
+- 如果希望数字以中文方式朗读，请将数字预处理为中文字符，否则将以英文方式朗读。
+- 如果生成输出为空（纯静音），请检查是否安装了ffmpeg（网上有各种教程，博客，视频等）。
+- 如果使用早期微调的检查点（仅进行了几次更新），请尝试关闭use_ema。
 
 
-## Gradio App
+## Gradio应用
 
-Currently supported features:
+当前支持的功能：
 
-- Basic TTS with Chunk Inference
-- Multi-Style / Multi-Speaker Generation
-- Voice Chat powered by Qwen2.5-3B-Instruct
-- [Custom inference with more language support](src/f5_tts/infer/SHARED.md)
+- 基本的TTS与分块推理
+- 多风格/多说话人生成
+- 由Qwen2.5-3B-Instruct驱动的语音聊天
+- [支持更多语言的自定义推理](src/f5_tts/infer/SHARED.md)
 
-The cli command `f5-tts_infer-gradio` equals to `python src/f5_tts/infer/infer_gradio.py`, which launches a Gradio APP (web interface) for inference.
+命令行指令 `f5-tts_infer-gradio` 等同于 `python src/f5_tts/infer/infer_gradio.py`，它会启动一个Gradio应用（网页界面）进行推理。
 
-The script will load model checkpoints from Huggingface. You can also manually download files and update the path to `load_model()` in `infer_gradio.py`. Currently only load TTS models first, will load ASR model to do transcription if `ref_text` not provided, will load LLM model if use Voice Chat.
+该脚本将从Huggingface加载模型检查点。你也可以手动下载文件，并在 `infer_gradio.py` 中更新 `load_model()` 的路径。目前只首先加载TTS模型，如果没有提供 `ref_text` 则会加载ASR模型进行转录，如果使用语音聊天则会加载LLM模型。
 
-More flags options:
+更多标志选项：
 
 ```bash
-# Automatically launch the interface in the default web browser
+# 自动在默认网页浏览器中启动界面
 f5-tts_infer-gradio --inbrowser
 
-# Set the root path of the application, if it's not served from the root ("/") of the domain
-# For example, if the application is served at "https://example.com/myapp"
+# 设置应用的根路径，如果它不是从域名的根目录（"/"）提供服务
+# 例如，如果应用在 "https://example.com/myapp" 提供服务
 f5-tts_infer-gradio --root_path "/myapp"
 ```
 
-Could also be used as a component for larger application:
+也可以作为更大应用的组件使用：
 ```python
 import gradio as gr
 from f5_tts.infer.infer_gradio import app
 
 with gr.Blocks() as main_app:
-    gr.Markdown("# This is an example of using F5-TTS within a bigger Gradio app")
+    gr.Markdown("# 这是在更大的Gradio应用中使用F5-TTS的示例")
 
-    # ... other Gradio components
+    # ... 其他Gradio组件
 
     app.render()
 
@@ -56,62 +56,62 @@ main_app.launch()
 ```
 
 
-## CLI Inference
+## 命令行推理
 
-The cli command `f5-tts_infer-cli` equals to `python src/f5_tts/infer/infer_cli.py`, which is a command line tool for inference.
+命令行指令 `f5-tts_infer-cli` 等同于 `python src/f5_tts/infer/infer_cli.py`，这是一个用于推理的命令行工具。
 
-The script will load model checkpoints from Huggingface. You can also manually download files and use `--ckpt_file` to specify the model you want to load, or directly update in `infer_cli.py`.
+该脚本将从Huggingface加载模型检查点。你也可以手动下载文件，并使用 `--ckpt_file` 指定要加载的模型，或直接在 `infer_cli.py` 中更新。
 
-For change vocab.txt use `--vocab_file` to provide your `vocab.txt` file.
+若要更改vocab.txt，使用 `--vocab_file` 提供你的 `vocab.txt` 文件。
 
-Basically you can inference with flags:
+基本上，你可以使用以下标志进行推理：
 ```bash
-# Leave --ref_text "" will have ASR model transcribe (extra GPU memory usage)
+# 将 --ref_text 留空 "" 将使用ASR模型进行转录（需要额外的GPU内存）
 f5-tts_infer-cli \
 --model "F5-TTS" \
 --ref_audio "ref_audio.wav" \
---ref_text "The content, subtitle or transcription of reference audio." \
---gen_text "Some text you want TTS model generate for you."
+--ref_text "参考音频的内容、字幕或转录。" \
+--gen_text "你希望TTS模型为你生成的一些文本。"
 
-# Choose Vocoder
-f5-tts_infer-cli --vocoder_name bigvgan --load_vocoder_from_local --ckpt_file <YOUR_CKPT_PATH, eg:ckpts/F5TTS_Base_bigvgan/model_1250000.pt>
-f5-tts_infer-cli --vocoder_name vocos --load_vocoder_from_local --ckpt_file <YOUR_CKPT_PATH, eg:ckpts/F5TTS_Base/model_1200000.safetensors>
+# 选择声码器
+f5-tts_infer-cli --vocoder_name bigvgan --load_vocoder_from_local --ckpt_file <你的检查点路径，例如：ckpts/F5TTS_Base_bigvgan/model_1250000.pt>
+f5-tts_infer-cli --vocoder_name vocos --load_vocoder_from_local --ckpt_file <你的检查点路径，例如：ckpts/F5TTS_Base/model_1200000.safetensors>
 
-# More instructions
+# 更多说明
 f5-tts_infer-cli --help
 ```
 
-And a `.toml` file would help with more flexible usage.
+使用 `.toml` 文件可以实现更灵活的用法。
 
 ```bash
 f5-tts_infer-cli -c custom.toml
 ```
 
-For example, you can use `.toml` to pass in variables, refer to `src/f5_tts/infer/examples/basic/basic.toml`:
+例如，你可以使用 `.toml` 传递变量，参考 `src/f5_tts/infer/examples/basic/basic.toml`：
 
 ```toml
 # F5-TTS | E2-TTS
 model = "F5-TTS"
 ref_audio = "infer/examples/basic/basic_ref_en.wav"
-# If an empty "", transcribes the reference audio automatically.
-ref_text = "Some call me nature, others call me mother nature."
-gen_text = "I don't really care what you call me. I've been a silent spectator, watching species evolve, empires rise and fall. But always remember, I am mighty and enduring."
-# File with text to generate. Ignores the text above.
+# 如果为空 ""，则自动转录参考音频。
+ref_text = "有人称我为自然，也有人称我为大自然母亲。"
+gen_text = "我并不在乎你怎么称呼我。我一直是个沉默的观察者，看着物种进化，帝国兴衰。但请记住，我是强大而持久的。"
+# 包含要生成文本的文件。忽略上面的文本。
 gen_file = ""
 remove_silence = false
 output_dir = "tests"
 ```
 
-You can also leverage `.toml` file to do multi-style generation, refer to `src/f5_tts/infer/examples/multi/story.toml`.
+你也可以利用 `.toml` 文件进行多风格生成，参考 `src/f5_tts/infer/examples/multi/story.toml`。
 
 ```toml
 # F5-TTS | E2-TTS
 model = "F5-TTS"
 ref_audio = "infer/examples/multi/main.flac"
-# If an empty "", transcribes the reference audio automatically.
+# 如果为空 ""，则自动转录参考音频。
 ref_text = ""
 gen_text = ""
-# File with text to generate. Ignores the text above.
+# 包含要生成文本的文件。忽略上面的文本。
 gen_file = "infer/examples/multi/story.txt"
 remove_silence = true
 output_dir = "tests"
@@ -124,34 +124,34 @@ ref_text = ""
 ref_audio = "infer/examples/multi/country.flac"
 ref_text = ""
 ```
-You should mark the voice with `[main]` `[town]` `[country]` whenever you want to change voice, refer to `src/f5_tts/infer/examples/multi/story.txt`.
+当你想要更换声音时，应该使用 `[main]` `[town]` `[country]` 标记，参考 `src/f5_tts/infer/examples/multi/story.txt`。
 
-## Speech Editing
+## 语音编辑
 
-To test speech editing capabilities, use the following command:
+要测试语音编辑功能，请使用以下命令：
 
 ```bash
 python src/f5_tts/infer/speech_edit.py
 ```
 
-## Socket Realtime Client
+## Socket实时客户端
 
-To communicate with socket server you need to run 
+要与socket服务器通信，你需要运行
 ```bash
 python src/f5_tts/socket_server.py
 ```
 
 <details>
-<summary>Then create client to communicate</summary>
+<summary>然后创建客户端进行通信</summary>
 
 ```bash
-# If PyAudio not installed
+# 如果没有安装PyAudio
 sudo apt-get install portaudio19-dev
 pip install pyaudio
 ```
 
 ``` python
-# Create the socket_client.py
+# 创建socket_client.py
 import socket
 import asyncio
 import pyaudio
@@ -181,7 +181,7 @@ async def listen_to_F5TTS(text, server_ip="localhost", server_port=9998):
                 if not data:
                     break
                 if data == b"END":
-                    logger.info("End of audio received.")
+                    logger.info("音频接收结束。")
                     break
 
                 audio_array = np.frombuffer(data, dtype=np.float32)
@@ -195,7 +195,7 @@ async def listen_to_F5TTS(text, server_ip="localhost", server_port=9998):
             stream.close()
             p.terminate()
 
-        logger.info(f"Total time taken: {time.time() - start_time:.4f} seconds")
+        logger.info(f"总共用时: {time.time() - start_time:.4f} 秒")
 
     try:
         data_to_send = f"{text}".encode("utf-8")
@@ -203,14 +203,14 @@ async def listen_to_F5TTS(text, server_ip="localhost", server_port=9998):
         await play_audio_stream()
 
     except Exception as e:
-        logger.error(f"Error in listen_to_F5TTS: {e}")
+        logger.error(f"listen_to_F5TTS中出错: {e}")
 
     finally:
         client_socket.close()
 
 
 if __name__ == "__main__":
-    text_to_send = "As a Reader assistant, I'm familiar with new technology. which are key to its improved performance in terms of both training speed and inference efficiency. Let's break down the components"
+    text_to_send = "作为阅读助手，我熟悉新技术。这些技术对提高训练速度和推理效率方面的性能至关重要。让我们分解一下组件"
 
     asyncio.run(listen_to_F5TTS(text_to_send))
 ```
