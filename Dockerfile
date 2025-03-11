@@ -4,7 +4,7 @@ USER root
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-LABEL github_repo="https://github.com/SWivid/F5-TTS"
+LABEL github_repo="https://github.com/Fiftonb/F5-TTS"
 
 RUN set -x \
     && apt-get update \
@@ -16,7 +16,7 @@ RUN set -x \
     
 WORKDIR /workspace
 
-RUN git clone https://github.com/SWivid/F5-TTS.git \
+RUN git clone https://github.com/Fiftonb/F5-TTS.git \
     && cd F5-TTS \
     && git submodule update --init --recursive \
     && pip install -e . --no-cache-dir
