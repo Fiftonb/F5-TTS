@@ -56,7 +56,7 @@ DEFAULT_TTS_MODEL_CFG = [
 vocoder = load_vocoder()
 
 
-def load_f5tts(ckpt_path=str(cached_path("hf://SWivid/F5-TTS/F5TTS_Base/model_1200000.safetensors"))):
+def load_f5tts(ckpt_path=str(cached_path("hf://SWivid/F5-TTS/F5TTS_Base/model_1200000.safetensors")):
     F5TTS_model_cfg = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, conv_layers=4)
     return load_model(DiT, F5TTS_model_cfg, ckpt_path)
 
@@ -178,55 +178,55 @@ def infer(
 
 with gr.Blocks() as app_credits:
     gr.Markdown("""
-# Credits
+# 致谢
 
-* [mrfakename](https://github.com/fakerybakery) for the original [online demo](https://huggingface.co/spaces/mrfakename/E2-F5-TTS)
-* [RootingInLoad](https://github.com/RootingInLoad) for initial chunk generation and podcast app exploration
-* [jpgallegoar](https://github.com/jpgallegoar) for multiple speech-type generation & voice chat
+* [mrfakename](https://github.com/fakerybakery) 提供的原始[在线演示](https://huggingface.co/spaces/mrfakename/E2-F5-TTS)
+* [RootingInLoad](https://github.com/RootingInLoad) 贡献了初始的分段生成和播客应用探索
+* [jpgallegoar](https://github.com/jpgallegoar) 贡献了多种语音类型生成和语音聊天功能
 """)
 with gr.Blocks() as app_tts:
-    gr.Markdown("# Batched TTS")
-    ref_audio_input = gr.Audio(label="Reference Audio", type="filepath")
-    gen_text_input = gr.Textbox(label="Text to Generate", lines=10)
-    generate_btn = gr.Button("Synthesize", variant="primary")
-    with gr.Accordion("Advanced Settings", open=False):
+    gr.Markdown("# 批量语音合成")
+    ref_audio_input = gr.Audio(label="参考音频", type="filepath")
+    gen_text_input = gr.Textbox(label="待生成文本", lines=10)
+    generate_btn = gr.Button("合成语音", variant="primary")
+    with gr.Accordion("高级设置", open=False):
         ref_text_input = gr.Textbox(
-            label="Reference Text",
-            info="Leave blank to automatically transcribe the reference audio. If you enter text it will override automatic transcription.",
+            label="参考文本",
+            info="留空将自动转录参考音频。如果输入文本，将覆盖自动转录结果。",
             lines=2,
         )
         remove_silence = gr.Checkbox(
-            label="Remove Silences",
-            info="The model tends to produce silences, especially on longer audio. We can manually remove silences if needed. Note that this is an experimental feature and may produce strange results. This will also increase generation time.",
+            label="移除静音",
+            info="模型在生成较长音频时倾向于产生静音。需要时可以手动移除静音。请注意，这是一个实验性功能，可能会产生奇怪的结果。这也会增加生成时间。",
             value=False,
         )
         speed_slider = gr.Slider(
-            label="Speed",
+            label="语速",
             minimum=0.3,
             maximum=2.0,
             value=1.0,
             step=0.1,
-            info="Adjust the speed of the audio.",
+            info="调整音频的播放速度。",
         )
         nfe_slider = gr.Slider(
-            label="NFE Steps",
+            label="去噪步数",
             minimum=4,
             maximum=64,
             value=32,
             step=2,
-            info="Set the number of denoising steps.",
+            info="设置去噪步骤的数量。",
         )
         cross_fade_duration_slider = gr.Slider(
-            label="Cross-Fade Duration (s)",
+            label="交叉淡入淡出时长 (秒)",
             minimum=0.0,
             maximum=1.0,
             value=0.15,
             step=0.01,
-            info="Set the duration of the cross-fade between audio clips.",
+            info="设置音频片段之间的交叉淡入淡出时长。",
         )
 
-    audio_output = gr.Audio(label="Synthesized Audio")
-    spectrogram_output = gr.Image(label="Spectrogram")
+    audio_output = gr.Audio(label="合成的音频")
+    spectrogram_output = gr.Image(label="频谱图")
 
     @gpu_decorator
     def basic_tts(
@@ -294,46 +294,46 @@ with gr.Blocks() as app_multistyle:
     # New section for multistyle generation
     gr.Markdown(
         """
-    # Multiple Speech-Type Generation
+    # 多种语音风格生成
 
-    This section allows you to generate multiple speech types or multiple people's voices. Enter your text in the format shown below, and the system will generate speech using the appropriate type. If unspecified, the model will use the regular speech type. The current speech type will be used until the next speech type is specified.
+    本部分允许您生成多种语音风格或多个人的声音。按照下面显示的格式输入文本，系统将使用相应的语音风格生成语音。如果未指定，模型将使用常规语音风格。当前语音风格将一直使用，直到指定下一个语音风格。
     """
     )
 
     with gr.Row():
         gr.Markdown(
             """
-            **Example Input:**                                                                      
-            {Regular} Hello, I'd like to order a sandwich please.                                                         
-            {Surprised} What do you mean you're out of bread?                                                                      
-            {Sad} I really wanted a sandwich though...                                                              
-            {Angry} You know what, darn you and your little shop!                                                                       
-            {Whisper} I'll just go back home and cry now.                                                                           
-            {Shouting} Why me?!                                                                         
+            **示例输入1:**                                                                      
+            {常规} 你好，我想订一个三明治。                                                         
+            {惊讶} 什么？你的面包卖完了？                                                                      
+            {悲伤} 我真的很想要一个三明治...                                                              
+            {愤怒} 你知道吗，去你的小店！                                                                       
+            {低语} 我现在要回家哭了。                                                                           
+            {大喊} 为什么是我啊？!                                                                         
             """
         )
 
         gr.Markdown(
             """
-            **Example Input 2:**                                                                                
-            {Speaker1_Happy} Hello, I'd like to order a sandwich please.                                                            
-            {Speaker2_Regular} Sorry, we're out of bread.                                                                                
-            {Speaker1_Sad} I really wanted a sandwich though...                                                                             
-            {Speaker2_Whisper} I'll give you the last one I was hiding.                                                                     
+            **示例输入2:**                                                                                
+            {说话人1_开心} 你好，我想订一个三明治。                                                            
+            {说话人2_常规} 抱歉，我们的面包卖完了。                                                                                
+            {说话人1_悲伤} 我真的很想要一个三明治...                                                                             
+            {说话人2_低语} 我给你最后一个我藏起来的。                                                                     
             """
         )
 
     gr.Markdown(
-        "Upload different audio clips for each speech type. The first speech type is mandatory. You can add additional speech types by clicking the 'Add Speech Type' button."
+        "为每种语音风格上传不同的音频片段。第一种语音风格是必需的。您可以通过点击'添加语音风格'按钮添加额外的语音风格。"
     )
 
     # Regular speech type (mandatory)
     with gr.Row() as regular_row:
         with gr.Column():
-            regular_name = gr.Textbox(value="Regular", label="Speech Type Name")
-            regular_insert = gr.Button("Insert Label", variant="secondary")
-        regular_audio = gr.Audio(label="Regular Reference Audio", type="filepath")
-        regular_ref_text = gr.Textbox(label="Reference Text (Regular)", lines=2)
+            regular_name = gr.Textbox(value="常规", label="语音风格名称")
+            regular_insert = gr.Button("插入标签", variant="secondary")
+        regular_audio = gr.Audio(label="常规参考音频", type="filepath")
+        regular_ref_text = gr.Textbox(label="参考文本（常规）", lines=2)
 
     # Regular speech type (max 100)
     max_speech_types = 100
@@ -348,11 +348,11 @@ with gr.Blocks() as app_multistyle:
     for i in range(max_speech_types - 1):
         with gr.Row(visible=False) as row:
             with gr.Column():
-                name_input = gr.Textbox(label="Speech Type Name")
-                delete_btn = gr.Button("Delete Type", variant="secondary")
-                insert_btn = gr.Button("Insert Label", variant="secondary")
-            audio_input = gr.Audio(label="Reference Audio", type="filepath")
-            ref_text_input = gr.Textbox(label="Reference Text", lines=2)
+                name_input = gr.Textbox(label="语音风格名称")
+                delete_btn = gr.Button("删除风格", variant="secondary")
+                insert_btn = gr.Button("插入标签", variant="secondary")
+            audio_input = gr.Audio(label="参考音频", type="filepath")
+            ref_text_input = gr.Textbox(label="参考文本", lines=2)
         speech_type_rows.append(row)
         speech_type_names.append(name_input)
         speech_type_audios.append(audio_input)
@@ -361,7 +361,7 @@ with gr.Blocks() as app_multistyle:
         speech_type_insert_btns.append(insert_btn)
 
     # Button to add speech type
-    add_speech_type_btn = gr.Button("Add Speech Type")
+    add_speech_type_btn = gr.Button("添加语音风格")
 
     # Keep track of autoincrement of speech types, no roll back
     speech_type_count = 1
@@ -392,9 +392,9 @@ with gr.Blocks() as app_multistyle:
 
     # Text input for the prompt
     gen_text_input_multistyle = gr.Textbox(
-        label="Text to Generate",
+        label="待生成文本",
         lines=10,
-        placeholder="Enter the script with speaker names (or emotion types) at the start of each block, e.g.:\n\n{Regular} Hello, I'd like to order a sandwich please.\n{Surprised} What do you mean you're out of bread?\n{Sad} I really wanted a sandwich though...\n{Angry} You know what, darn you and your little shop!\n{Whisper} I'll just go back home and cry now.\n{Shouting} Why me?!",
+        placeholder="输入带有说话人名称（或情感类型）的脚本，例如：\n\n{常规} 你好，我想订一个三明治。\n{惊讶} 什么？你的面包卖完了？\n{悲伤} 我真的很想要一个三明治...\n{愤怒} 你知道吗，去你的小店！\n{低语} 我现在要回家哭了。\n{大喊} 为什么是我啊？!",
     )
 
     def make_insert_speech_type_fn(index):
@@ -414,17 +414,17 @@ with gr.Blocks() as app_multistyle:
             outputs=gen_text_input_multistyle,
         )
 
-    with gr.Accordion("Advanced Settings", open=False):
+    with gr.Accordion("高级设置", open=False):
         remove_silence_multistyle = gr.Checkbox(
-            label="Remove Silences",
+            label="移除静音",
             value=True,
         )
 
     # Generate button
-    generate_multistyle_btn = gr.Button("Generate Multi-Style Speech", variant="primary")
+    generate_multistyle_btn = gr.Button("生成多风格语音", variant="primary")
 
     # Output audio
-    audio_output_multistyle = gr.Audio(label="Synthesized Audio")
+    audio_output_multistyle = gr.Audio(label="合成的音频")
 
     @gpu_decorator
     def generate_multistyle_speech(
@@ -539,17 +539,17 @@ with gr.Blocks() as app_multistyle:
 with gr.Blocks() as app_chat:
     gr.Markdown(
         """
-# Voice Chat
-Have a conversation with an AI using your reference voice! 
-1. Upload a reference audio clip and optionally its transcript.
-2. Load the chat model.
-3. Record your message through your microphone.
-4. The AI will respond using the reference voice.
+# 语音聊天
+使用您的参考声音与AI进行对话！
+1. 上传参考音频片段及其可选的转录文本。
+2. 加载聊天模型。
+3. 通过麦克风录制您的消息。
+4. AI将使用参考声音回复。
 """
     )
 
     if not USING_SPACES:
-        load_chat_model_btn = gr.Button("Load Chat Model", variant="primary")
+        load_chat_model_btn = gr.Button("加载聊天模型", variant="primary")
 
         chat_interface_container = gr.Column(visible=False)
 
@@ -581,46 +581,46 @@ Have a conversation with an AI using your reference voice!
     with chat_interface_container:
         with gr.Row():
             with gr.Column():
-                ref_audio_chat = gr.Audio(label="Reference Audio", type="filepath")
+                ref_audio_chat = gr.Audio(label="参考音频", type="filepath")
             with gr.Column():
-                with gr.Accordion("Advanced Settings", open=False):
+                with gr.Accordion("高级设置", open=False):
                     remove_silence_chat = gr.Checkbox(
-                        label="Remove Silences",
+                        label="移除静音",
                         value=True,
                     )
                     ref_text_chat = gr.Textbox(
-                        label="Reference Text",
-                        info="Optional: Leave blank to auto-transcribe",
+                        label="参考文本",
+                        info="可选：留空将自动转录",
                         lines=2,
                     )
                     system_prompt_chat = gr.Textbox(
-                        label="System Prompt",
-                        value="You are not an AI assistant, you are whoever the user says you are. You must stay in character. Keep your responses concise since they will be spoken out loud.",
+                        label="系统提示词",
+                        value="你不是AI助手，你是用户说你是谁，你就是谁。你必须保持角色。保持简洁的回复，因为它们将被大声朗读出来。",
                         lines=2,
                     )
 
-        chatbot_interface = gr.Chatbot(label="Conversation")
+        chatbot_interface = gr.Chatbot(label="对话")
 
         with gr.Row():
             with gr.Column():
                 audio_input_chat = gr.Microphone(
-                    label="Speak your message",
+                    label="说出您的消息",
                     type="filepath",
                 )
                 audio_output_chat = gr.Audio(autoplay=True)
             with gr.Column():
                 text_input_chat = gr.Textbox(
-                    label="Type your message",
+                    label="输入您的消息",
                     lines=1,
                 )
-                send_btn_chat = gr.Button("Send Message")
-                clear_btn_chat = gr.Button("Clear Conversation")
+                send_btn_chat = gr.Button("发送消息")
+                clear_btn_chat = gr.Button("清除对话")
 
         conversation_state = gr.State(
             value=[
                 {
                     "role": "system",
-                    "content": "You are not an AI assistant, you are whoever the user says you are. You must stay in character. Keep your responses concise since they will be spoken out loud.",
+                    "content": "你不是AI助手，你是用户说你是谁，你就是谁。你必须保持角色。保持简洁的回复，因为它们将被大声朗读出来。",
                 }
             ]
         )
@@ -676,7 +676,7 @@ Have a conversation with an AI using your reference voice!
             return [], [
                 {
                     "role": "system",
-                    "content": "You are not an AI assistant, you are whoever the user says you are. You must stay in character. Keep your responses concise since they will be spoken out loud.",
+                    "content": "你不是AI助手，你是用户说你是谁，你就是谁。你必须保持角色。保持简洁的回复，因为它们将被大声朗读出来。",
                 }
             ]
 
@@ -747,18 +747,18 @@ Have a conversation with an AI using your reference voice!
 with gr.Blocks() as app:
     gr.Markdown(
         f"""
-# E2/F5 TTS
+# E2/F5 语音合成
 
-This is {"a local web UI for [F5 TTS](https://github.com/SWivid/F5-TTS)" if not USING_SPACES else "an online demo for [F5-TTS](https://github.com/SWivid/F5-TTS)"} with advanced batch processing support. This app supports the following TTS models:
+这是{"F5 TTS的本地Web界面" if not USING_SPACES else "F5-TTS的在线演示"}，支持高级批处理功能。本应用支持以下TTS模型：
 
-* [F5-TTS](https://arxiv.org/abs/2410.06885) (A Fairytaler that Fakes Fluent and Faithful Speech with Flow Matching)
-* [E2 TTS](https://arxiv.org/abs/2406.18009) (Embarrassingly Easy Fully Non-Autoregressive Zero-Shot TTS)
+* [F5-TTS](https://arxiv.org/abs/2410.06885)（使用流匹配技术实现流畅且忠实的语音合成）
+* [E2 TTS](https://arxiv.org/abs/2406.18009)（简单易用的完全非自回归零样本TTS）
 
-The checkpoints currently support English and Chinese.
+当前的检查点支持英语和中文。
 
-If you're having issues, try converting your reference audio to WAV or MP3, clipping it to 15s with  ✂  in the bottom right corner (otherwise might have non-optimal auto-trimmed result).
+如果遇到问题，请尝试将参考音频转换为WAV或MP3格式，使用右下角的✂️工具将其剪辑到15秒（否则可能会得到非最优的自动裁剪结果）。
 
-**NOTE: Reference text will be automatically transcribed with Whisper if not provided. For best results, keep your reference clips short (<15s). Ensure the audio is fully uploaded before generating.**
+**注意：如果未提供参考文本，将使用Whisper自动转录。为获得最佳效果，请保持参考片段简短（<15秒）。确保在生成之前音频已完全上传。**
 """
     )
 
@@ -798,24 +798,24 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
     with gr.Row():
         if not USING_SPACES:
             choose_tts_model = gr.Radio(
-                choices=[DEFAULT_TTS_MODEL, "E2-TTS", "Custom"], label="Choose TTS Model", value=DEFAULT_TTS_MODEL
+                choices=[DEFAULT_TTS_MODEL, "E2-TTS", "自定义"], label="选择TTS模型", value=DEFAULT_TTS_MODEL
             )
         else:
             choose_tts_model = gr.Radio(
-                choices=[DEFAULT_TTS_MODEL, "E2-TTS"], label="Choose TTS Model", value=DEFAULT_TTS_MODEL
+                choices=[DEFAULT_TTS_MODEL, "E2-TTS"], label="选择TTS模型", value=DEFAULT_TTS_MODEL
             )
         custom_ckpt_path = gr.Dropdown(
             choices=[DEFAULT_TTS_MODEL_CFG[0]],
             value=load_last_used_custom()[0],
             allow_custom_value=True,
-            label="Model: local_path | hf://user_id/repo_id/model_ckpt",
+            label="模型：本地路径 | hf://用户id/仓库id/模型检查点",
             visible=False,
         )
         custom_vocab_path = gr.Dropdown(
             choices=[DEFAULT_TTS_MODEL_CFG[1]],
             value=load_last_used_custom()[1],
             allow_custom_value=True,
-            label="Vocab: local_path | hf://user_id/repo_id/vocab_file",
+            label="词汇表：本地路径 | hf://用户id/仓库id/词汇文件",
             visible=False,
         )
         custom_model_cfg = gr.Dropdown(
@@ -825,7 +825,7 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
             ],
             value=load_last_used_custom()[2],
             allow_custom_value=True,
-            label="Config: in a dictionary form",
+            label="配置：以字典形式",
             visible=False,
         )
 
@@ -853,38 +853,38 @@ If you're having issues, try converting your reference audio to WAV or MP3, clip
 
     gr.TabbedInterface(
         [app_tts, app_multistyle, app_chat, app_credits],
-        ["Basic-TTS", "Multi-Speech", "Voice-Chat", "Credits"],
+        ["基础TTS", "多风格语音", "语音聊天", "致谢"],
     )
 
 
 @click.command()
-@click.option("--port", "-p", default=None, type=int, help="Port to run the app on")
-@click.option("--host", "-H", default=None, help="Host to run the app on")
+@click.option("--port", "-p", default=None, type=int, help="运行应用的端口")
+@click.option("--host", "-H", default=None, help="运行应用的主机")
 @click.option(
     "--share",
     "-s",
     default=False,
     is_flag=True,
-    help="Share the app via Gradio share link",
+    help="通过Gradio共享链接分享应用",
 )
-@click.option("--api", "-a", default=True, is_flag=True, help="Allow API access")
+@click.option("--api", "-a", default=True, is_flag=True, help="允许API访问")
 @click.option(
     "--root_path",
     "-r",
     default=None,
     type=str,
-    help='The root path (or "mount point") of the application, if it\'s not served from the root ("/") of the domain. Often used when the application is behind a reverse proxy that forwards requests to the application, e.g. set "/myapp" or full URL for application served at "https://example.com/myapp".',
+    help='应用的根路径（或"挂载点"），如果它不是从域的根目录（"/"）提供服务。通常在应用程序位于将请求转发到应用程序的反向代理后面时使用，例如为在"https://example.com/myapp"提供服务的应用程序设置"/myapp"或完整URL。',
 )
 @click.option(
     "--inbrowser",
     "-i",
     is_flag=True,
     default=False,
-    help="Automatically launch the interface in the default web browser",
+    help="自动在默认网络浏览器中启动界面",
 )
 def main(port, host, share, api, root_path, inbrowser):
     global app
-    print("Starting app...")
+    print("正在启动应用...")
     app.queue(api_open=api).launch(
         server_name=host,
         server_port=port,
